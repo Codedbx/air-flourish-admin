@@ -40,7 +40,7 @@ export default function CreateCoupon({ packages }) {
     <AppLayout>
       <Head title="Create Coupon" />
 
-      <div className="flex flex-col gap-6 p-6 bg-white rounded-xl shadow-sm">
+      <div className="flex flex-col gap-6 p-6  rounded-xl shadow-sm">
         <header className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button
@@ -57,7 +57,7 @@ export default function CreateCoupon({ packages }) {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card>
+          <Card className="dark:bg-gray-800">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Gift className="w-5 h-5" />
@@ -142,14 +142,14 @@ export default function CreateCoupon({ packages }) {
                   value={data.max_uses}
                   onChange={e => setData('max_uses', e.target.value)}
                   placeholder="Unlimited if blank"
-                  className={errors.max_uses ? 'border-red-500' : ''}
+                  className={errors.max_uses ? 'border-red-500' : 'dark:bg-gray-700 dark:text-gray-300'}
                 />
                 {errors.max_uses && <p className="text-sm text-red-600">{errors.max_uses}</p>}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-gray-800">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Shield className="w-5 h-5" />

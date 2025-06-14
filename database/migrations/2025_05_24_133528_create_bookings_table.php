@@ -45,7 +45,7 @@ return new class extends Migration
             
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
 
-            $table->json('snapshots')->require();
+            $table->json('snapshot')->require();
 
             $table->string('access_token')->nullable()->unique();
             $table->timestamp('access_token_expires_at')->nullable();

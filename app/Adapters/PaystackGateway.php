@@ -57,6 +57,7 @@ class PaystackGateway implements PaymentGatewayInterface
             'gateway_reference' => $result['data']['reference'],
             'amount' => $result['data']['amount'],
             'currency' => $result['data']['currency'],
+            'provider_response'=> $result,
         ];
     }
 

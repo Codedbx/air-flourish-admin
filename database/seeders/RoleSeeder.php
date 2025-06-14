@@ -5,8 +5,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -99,6 +101,15 @@ class RoleSeeder extends Seeder
 
         // (No platform settings, no analytics, no user management)
         $agentRole->givePermissionTo($agentPermissions);
+
+
+        $adminUser = User::create([
+            'name'     => 'Admin User',
+            'email'    => 'joshua@admin.com',
+            'password' => Hash::make('password123'), 
+        ]);
+
+        $adminUser->assignRole($adminRole);
 
     }
 }

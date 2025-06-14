@@ -91,25 +91,13 @@ class EspeesGateway implements PaymentGatewayInterface
 
         $result = $response->json();
 
-        // Map Espees transaction status to our internal status
-        $status = match ($result['transaction_status']) {
-            'APPROVED' => 'success',
-            'DECLINE' => 'failed',
-            'PENDING' => 'pending',
-            'NOT FOUND' => 'failed',
-            default => 'failed',
-        };
 
         return [
-            'status' => $status,
+            'status' => $result['transaction_status'],
             'gateway_reference' => $paymentRef,
             'amount' => $result['price'] * 100, // Convert back to cents
             'currency' => 'USD', // Espees uses their own currency, but we'll map to USD
-            'transaction_details' => [
-                'customer_username' => $result['customer_username'] ?? null,
-                'transaction_date' => $result['transaction_date'] ?? null,
-                'status_details' => $result['status_details'] ?? null,
-            ],
+            'provider_response' => $result,
         ];
     }
 

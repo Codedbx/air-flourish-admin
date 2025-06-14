@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Adapters\EspeesGateway;
 use App\Adapters\PaymentGatewayAdapter;
+use App\Events\BookingCreated;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PlatformSetting;
@@ -111,7 +112,7 @@ class PaymentService
 
         try {
             $result = $gateway->initialize([
-                'email' => "emmanuel.gita@gmail.com",
+                'email' => $booking->email,
                 'amount' => $gatewayAmount,
                 'currency' => $currency,
                 'reference' => $reference,
@@ -168,6 +169,7 @@ class PaymentService
         return [
             'payment' => $payment->fresh(),
             'booking' => $payment->booking,
+
         ];
     }
 
@@ -312,7 +314,7 @@ class PaymentService
         ]);
 
         // Dispatch booking confirmation events
-        // event(new BookingConfirmed($booking));
+        event(new BookingCreated($booking));
     }
 
 

@@ -21,7 +21,6 @@ class ActivityController extends Controller
         private ActivityService $activityService
     ) {
         
-        // $this->authorizeResource(Activity::class, 'activity');
         
 
     }
@@ -63,7 +62,7 @@ class ActivityController extends Controller
      */
     public function agentActivities(Request $request, int $agentId)
     {
-        Gate::allows('view all activities');
+        // Gate::allows('view all activities');
 
         $filters = $request->only([
             'title', 
@@ -88,7 +87,7 @@ class ActivityController extends Controller
      */
     public function show(Activity $activity)
     {
-        $this->authorize('view', Activity::class);
+        $this->authorize('view', $activity);
 
         $activity = $this->activityService->getActivity($activity->id);
 
@@ -100,18 +99,18 @@ class ActivityController extends Controller
 
     public function create()
     {
-        // $this->authorize('create', Activity::class);
+        $this->authorize('create', Activity::class);
 
         return Inertia::render('activities/createActivity');
     }
 
     public function edit(Activity $activity)
     {
-        // $this->authorize('view', Activity::class);
+        $this->authorize('view', $activity);
 
         $activity = $this->activityService->getActivity($activity->id);
 
-        return Inertia::render('activities/createActivity', [
+        return Inertia::render('activities/editActivity', [
             'activity' => $activity
         ]);
     }
@@ -121,13 +120,13 @@ class ActivityController extends Controller
      */
     public function store(StoreActivityRequest $request)
     {
-        // $this->authorize('create', Activity::class);
+        $this->authorize('create', Activity::class);
 
         $validated = $request->validated();
 
         $activity = $this->activityService->createActivity($validated);
 
-        return redirect()->route('activities.show', $activity->id)
+        return redirect()->route('activities.index', $activity->id)
             ->with('success', 'Activity created successfully!');
     }
 
@@ -141,15 +140,9 @@ class ActivityController extends Controller
             'title' => 'sometimes|string|max:255',
             'location' => 'sometimes|string|max:255',
             'price' => 'sometimes|numeric|min:0',
-            'start_time' => 'nullable|date',
-            'end_time' => 'nullable|date|after:start_time',
             'time_slots' => 'nullable|array',
-            'time_slots.*.id' => 'sometimes|integer|exists:activity_time_slots,id',
-            'time_slots.*.starts_at' => 'required_with:time_slots|date',
-            'time_slots.*.ends_at' => 'required_with:time_slots|date|after:time_slots.*.starts_at',
-            'delete_time_slots' => 'nullable|array',
-            'delete_time_slots.*' => 'integer|exists:activity_time_slots,id',
-            'replace_slots' => 'sometimes|boolean',
+            'time_slots.*.starts_at' => ['required','date_format:H:i'],
+            'time_slots.*.ends_at'   => ['required','date_format:H:i','after:time_slots.*.starts_at'],
         ]);
 
         $activity = $this->activityService->updateActivity($activity->id, $validated);

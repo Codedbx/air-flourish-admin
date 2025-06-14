@@ -7,6 +7,7 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Services\BookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
@@ -19,7 +20,7 @@ class BookingController extends Controller
 
     public function index(): JsonResponse
     {
-        $bookings = $this->bookingService->getUserBookings(auth()->id());
+        $bookings = $this->bookingService->getUserBookings(Auth::id());
 
         return response()->json([
             'status' => 'success',
@@ -57,7 +58,7 @@ class BookingController extends Controller
     {
         $booking = $this->bookingService->getBooking($id);
 
-        if (!$booking || $booking->user_id !== auth()->id()) {
+        if (!$booking || $booking->user_id !== Auth::id()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Booking not found',

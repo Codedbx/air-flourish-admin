@@ -50,6 +50,7 @@ class StripeGateway implements PaymentGatewayInterface
             'gateway_reference' => $session->id,
             'amount' => $session->amount_total,
             'currency' => $session->currency,
+            'provider_response' => $session,
         ];
     }
 
