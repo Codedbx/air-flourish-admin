@@ -1,94 +1,103 @@
-// resources/js/Components/LocationSearch.jsx
+// resources/js/Components/LocationSearch.tsx
+import { MapPin } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
-import { usePage, router } from '@inertiajs/react';
 
-const LocationSearch = ({ onSelect, initialValue = '' }) => {
-    const [query, setQuery] = useState(initialValue);
-    const [suggestions, setSuggestions] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const timerRef = useRef(null);
+interface LocationSuggestion {
+  city: string;
+  country: string;
+  display: string;
+}
 
-    useEffect(() => {
-        // Clear timer on unmount
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
-        };
-    }, []);
+interface LocationSearchProps {
+  onSelect: (value: string) => void;
+  value?: string;
+}
 
-    useEffect(() => {
-        if (query.length > 2) {
-            if (timerRef.current) clearTimeout(timerRef.current);
-            
-            timerRef.current = setTimeout(() => {
-                fetchSuggestions();
-            }, 300);
-        } else {
-            setSuggestions([]);
-        }
-    }, [query]);
+const LocationSearch: React.FC<LocationSearchProps> = ({ 
+  onSelect, 
+  value = ''
+}) => {
+  const [query, setQuery] = useState<string>(value);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const fetchSuggestions = () => {
-        setLoading(true);
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (query.length > 2) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      
+      timerRef.current = setTimeout(() => {
+        fetchSuggestions();
+      }, 300);
+    } else {
+      setSuggestions([]);
+    }
+    
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [query]);
+
+  const fetchSuggestions = async () => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`/api/locations/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      setSuggestions(data);
+    } catch (error) {
+      console.error('Location search error:', error);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelect = (suggestion: LocationSuggestion) => {
+    setQuery(suggestion.display);
+    onSelect(suggestion.display);
+    setSuggestions([]);
+  };
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search for a city..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+        <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
         
-        router.get('/api/locations/search', { q: query }, {
-            preserveState: true,
-            preserveScroll: true,
-            only: ['suggestions'],
-            onSuccess: (page) => {
-                setSuggestions(page.props.suggestions || []);
-                setLoading(false);
-            },
-            onError: () => {
-                setSuggestions([]);
-                setLoading(false);
-            }
-        });
-    };
-
-    const handleSelect = (location) => {
-        const displayText = `${location.name}, ${location.country}`;
-        setQuery(displayText);
-        onSelect(displayText);
-        setSuggestions([]);
-    };
-
-    return (
-        <div className="relative">
-            <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search for a city..."
-                className="w-full px-4 py-2 border rounded-lg"
-            />
-            
-            {loading && (
-                <div className="absolute inset-y-0 right-3 flex items-center">
-                    <svg className="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-            )}
-
-            {suggestions.length > 0 && (
-                <ul className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-auto">
-                    {suggestions.map((location, index) => (
-                        <li 
-                            key={index}
-                            className="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
-                            onClick={() => handleSelect(location)}
-                        >
-                            <div className="font-medium">{location.name}</div>
-                            <div className="text-sm text-gray-600">
-                                {location.country} {location.state ? `, ${location.state}` : ''}
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
+        {loading && (
+          <div className="absolute inset-y-0 right-8 flex items-center">
+            <div className="w-4 h-4 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+          </div>
+        )}
+      </div>
+      
+      {suggestions.length > 0 && (
+        <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+          {suggestions.map((suggestion, index) => (
+            <li 
+              key={index}
+              className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+              onClick={() => handleSelect(suggestion)}
+            >
+              <div className="font-medium text-gray-900">{suggestion.city}</div>
+              <div className="text-sm text-gray-600">{suggestion.country}</div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 };
 
 export default LocationSearch;

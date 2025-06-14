@@ -6,24 +6,24 @@ import { Sidebar, SidebarContent,SidebarGroup, SidebarFooter, SidebarHeader, Sid
 import { type NavItem } from '@/types';
 import { type NavItemWithSub } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Plus, UserPlus,LayoutDashboard,Calendar,FileText,Package, Clock, Shield, Users} from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Plus, UserPlus,LayoutDashboard,Calendar,FileText,Package, Clock, Shield, Users, Gift} from 'lucide-react';
 import AppLogo from './app-logo';
 
 
 const quickActions: NavItem[] = [
     {
       title: "New Booking",
-      href: "booking/create",
+      href: "booking/flight",
       icon: Plus,
     },
     {
       title: "Create Package",
-      href: "/package/create",
+      href: "/packages/create",
       icon: Plus,
     },
     {
       title: "Create User",
-      href: "/user/create",
+      href: "/users/create",
       icon: UserPlus,
     },
 ]
@@ -52,6 +52,11 @@ const footerNavItems: NavItem[] = [
     //     href: 'https://laravel.com/docs/starter-kits#react',
     //     icon: BookOpen,
     // },
+     {
+      title: "Platform Adon/Rates",
+      icon: LayoutGrid,
+      href:"/settings/platform"
+    },
 ];
 
  const dashboardMainNav: NavItemWithSub[] = [
@@ -86,6 +91,15 @@ const footerNavItems: NavItem[] = [
         { title: "Create Packages", href: "/packages/create" },
       ],
     },
+    {
+      title: "Coupons",
+      icon: Gift,
+      key: "coupons",
+      items: [
+        { title: "All Coupons", href: "/coupons/all" },
+        { title: "Create Coupons", href: "/coupons/create" },
+      ],
+    },
     { 
       title: "Activities",
       icon: Clock,
@@ -102,8 +116,6 @@ const footerNavItems: NavItem[] = [
       items: [
         { title: "All Users", href: "/users/all" },
         { title: "Create User", href: "/users/create" },
-        { title: "Admins", href: "/users?role=admin" },
-        { title: "Agents", href: "/users?role=agent" },
       ],
     },
     {
@@ -115,13 +127,6 @@ const footerNavItems: NavItem[] = [
         { title: "Create Role", href: "/roles/create" },
       ],
     },
-
-    {
-      title: "Platform Adon/Rates",
-      icon: LayoutGrid,
-      href:"/settings/platform"
-    },
-   
   ]
 
 

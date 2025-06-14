@@ -7,7 +7,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdatePlatformSettingRequest;
+use App\Models\PlatformSetting;
 use App\Services\PlatformSettingService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -15,6 +17,8 @@ use Inertia\Response;
 
 class PlatformSettingController extends Controller
 {
+
+    use AuthorizesRequests;
     /**
      * @var PlatformSettingService
      */
@@ -37,6 +41,8 @@ class PlatformSettingController extends Controller
      */
     public function edit(): Response
     {
+        $this->authorize('viewAny', PlatformSetting::class);
+
         $settings = $this->platformSettingService->getSettings();
         $hasExistingSettings = $settings->exists;
 
@@ -54,6 +60,8 @@ class PlatformSettingController extends Controller
      */
     public function update(UpdatePlatformSettingRequest $request): RedirectResponse
     {
+        $this->authorize('create', PlatformSetting::class);
+
         try {
             $settings = $this->platformSettingService->updateSettings($request->validated());
 
@@ -65,37 +73,5 @@ class PlatformSettingController extends Controller
                 ->route('settings.platform')
                 ->with('error', 'Failed to update platform settings. Please try again.');
         }
-    }
-
-    /**
-     * Get the platform settings (API endpoint).
-     *
-     * @return JsonResponse
-     */
-    public function getSettings(): JsonResponse
-    {
-        $settings = $this->platformSettingService->getSettings();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $settings,
-        ]);
-    }
-
-    /**
-     * Update the platform settings (API endpoint).
-     *
-     * @param UpdatePlatformSettingRequest $request
-     * @return JsonResponse
-     */
-    public function updateSettings(UpdatePlatformSettingRequest $request): JsonResponse
-    {
-        $settings = $this->platformSettingService->updateSettings($request->validated());
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Platform settings updated successfully',
-            'data' => $settings,
-        ]);
     }
 }

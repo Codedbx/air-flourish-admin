@@ -157,3 +157,9 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+  .bg-auth-pattern {
+    background-image: url('/images/auth-bg.jpg');
+  }
+}

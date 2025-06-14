@@ -1,7 +1,4 @@
-
-
-// // resources/js/components/dashboard/GraphComponent.jsx
-// import React from 'react';
+// import React, { useState } from 'react';
 // import {
 //   Bar,
 //   BarChart,
@@ -23,59 +20,101 @@
 
 // //
 // // Props:
-// //   • data: Array<{
-// //       week: string,      // e.g. "May 5–May 11"
-// //       total: number      // e.g. 12345.67
-// //     }>
-// //   • yAxisMax: number     // e.g. 2000 or 3000, as computed by the controller
+// //   • weeklyPayments:   Array<{ period: string, total: number }>
+// //   • yMaxWeekly:       number
+// //   • monthlyPayments:  Array<{ period: string, total: number }>
+// //   • yMaxMonthly:      number
+// //   • yearlyPayments:   Array<{ period: string, total: number }>
+// //   • yMaxYearly:       number
 // //
-// export function GraphComponent({ data, yAxisMax }) {
-//   if (!data || yAxisMax === undefined) {
+// export function GraphComponent({
+//   weeklyPayments,
+//   yMaxWeekly,
+//   monthlyPayments,
+//   yMaxMonthly,
+//   yearlyPayments,
+//   yMaxYearly,
+// }) {
+//   const [scope, setScope] = useState('month');
+
+//   let chartData, yAxisMax, xAxisLabelFormat;
+//   if (scope === 'week') {
+//     chartData = weeklyPayments;
+//     yAxisMax = yMaxWeekly;
+//     xAxisLabelFormat = (val) => val;
+//   } else if (scope === 'year') {
+//     chartData = yearlyPayments;
+//     yAxisMax = yMaxYearly;
+//     xAxisLabelFormat = (val) => val;
+//   } else {
+//     chartData = monthlyPayments;
+//     yAxisMax = yMaxMonthly;
+//     xAxisLabelFormat = (val) => val;
+//   }
+
+//   if (!chartData || yAxisMax === undefined) {
 //     return null;
 //   }
 
 //   return (
 //     <Card className="w-full">
-//       <CardHeader>
-//         <CardTitle>Weekly Payments</CardTitle>
-//         <CardDescription>Last 6 Weeks</CardDescription>
+//       <CardHeader className="flex items-center justify-between">
+//         <div>
+//           <CardTitle>Total bookings</CardTitle>
+//           <CardDescription>
+//             {scope === 'week'
+//               ? 'Last 6 Weeks'
+//               : scope === 'year'
+//               ? 'Last 5 Years'
+//               : 'Last 6 Months'}
+//           </CardDescription>
+//         </div>
+//         <select
+//           value={scope}
+//           onChange={(e) => setScope(e.target.value)}
+//           className="border border-gray-300 rounded px-2 py-1 text-sm"
+//         >
+//           <option value="week">Week</option>
+//           <option value="month">Month</option>
+//           <option value="year">Year</option>
+//         </select>
 //       </CardHeader>
 
 //       <CardContent>
 //         <div style={{ width: '100%', height: 300 }}>
 //           <ResponsiveContainer>
 //             <BarChart
-//               data={data}
+//               data={chartData}
 //               margin={{ top: 20, right: 20, left: 10, bottom: 60 }}
 //             >
 //               <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
-//               {/* X-Axis: each week label rotated −45° so it never overflows */}
 //               <XAxis
-//                 dataKey="week"
+//                 dataKey="period"
 //                 tickLine={false}
 //                 axisLine={false}
 //                 angle={-45}
 //                 textAnchor="end"
 //                 interval={0}
-//                 tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
 //                 height={50}
+//                 tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+//                 tickFormatter={xAxisLabelFormat}
 //               />
 
-//               {/* Y-Axis: domain set to [0, yAxisMax], ticks at nice intervals */}
 //               <YAxis
 //                 tickLine={false}
 //                 axisLine={false}
 //                 domain={[0, yAxisMax]}
+//                 tickCount={5}
 //                 tickFormatter={(value) => {
 //                   if (value >= 1000) {
-//                     // Show “1k”, “1.5k”, “2k”, etc.
-//                     return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k`;
+//                     return `${(value / 1000).toFixed(
+//                       value % 1000 === 0 ? 0 : 1
+//                     )}k`;
 //                   }
 //                   return value.toString();
 //                 }}
 //                 tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-//                 tickCount={5}
 //               />
 
 //               <Tooltip
@@ -85,7 +124,9 @@
 //                     maximumFractionDigits: 2,
 //                   })
 //                 }
-//                 labelFormatter={(label) => `Week: ${label}`}
+//                 labelFormatter={(label) =>
+//                   `${scope.charAt(0).toUpperCase() + scope.slice(1)}: ${label}`
+//                 }
 //                 contentStyle={{
 //                   fontSize: 12,
 //                   borderRadius: '4px',
@@ -93,12 +134,11 @@
 //                 }}
 //               />
 
-//               {/* Bar width fixed at 20px so bars look uniform */}
 //               <Bar
 //                 dataKey="total"
-//                 fill="var(--color-primary)"
 //                 barSize={20}
 //                 radius={[4, 4, 0, 0]}
+//                 className="fill-indigo-400/60"
 //               />
 //             </BarChart>
 //           </ResponsiveContainer>
@@ -107,17 +147,18 @@
 
 //       <CardFooter className="flex-col items-start gap-2 text-sm">
 //         <div className="flex gap-2 font-medium leading-none">
-//           {/* Ideally you compute a real “% trend” server-side and inject it here */}
-//           Trending up this period <TrendingUp className="h-4 w-4" />
+//           Trending this period <TrendingUp className="h-4 w-4" />
 //         </div>
 //         <div className="leading-none text-muted-foreground">
-//           Showing total paid amounts per week
+//           Showing total payment amounts
 //         </div>
 //       </CardFooter>
 //     </Card>
 //   );
 // }
-import React, { useState } from 'react';
+
+// GraphComponent.js
+import React, { useState, useEffect } from 'react';
 import {
   Bar,
   BarChart,
@@ -137,15 +178,6 @@ import {
 } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 
-//
-// Props:
-//   • weeklyPayments:   Array<{ period: string, total: number }>
-//   • yMaxWeekly:       number
-//   • monthlyPayments:  Array<{ period: string, total: number }>
-//   • yMaxMonthly:      number
-//   • yearlyPayments:   Array<{ period: string, total: number }>
-//   • yMaxYearly:       number
-//
 export function GraphComponent({
   weeklyPayments,
   yMaxWeekly,
@@ -155,6 +187,25 @@ export function GraphComponent({
   yMaxYearly,
 }) {
   const [scope, setScope] = useState('month');
+  const [isDark, setIsDark] = useState(false);
+
+  // Check for dark mode
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkDarkMode();
+    
+    // Watch for changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   let chartData, yAxisMax, xAxisLabelFormat;
   if (scope === 'week') {
@@ -176,11 +227,11 @@ export function GraphComponent({
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
       <CardHeader className="flex items-center justify-between">
         <div>
-          <CardTitle>Total bookings</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-gray-900 dark:text-gray-100">Total bookings</CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-400">
             {scope === 'week'
               ? 'Last 6 Weeks'
               : scope === 'year'
@@ -191,7 +242,7 @@ export function GraphComponent({
         <select
           value={scope}
           onChange={(e) => setScope(e.target.value)}
-          className="border border-gray-300 rounded px-2 py-1 text-sm"
+          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
         >
           <option value="week">Week</option>
           <option value="month">Month</option>
@@ -206,7 +257,11 @@ export function GraphComponent({
               data={chartData}
               margin={{ top: 20, right: 20, left: 10, bottom: 60 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                vertical={false} 
+                stroke={isDark ? 'rgb(75 85 99)' : 'rgb(229 231 235)'}
+              />
 
               <XAxis
                 dataKey="period"
@@ -216,7 +271,10 @@ export function GraphComponent({
                 textAnchor="end"
                 interval={0}
                 height={50}
-                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                tick={{ 
+                  fontSize: 10, 
+                  fill: isDark ? 'rgb(156 163 175)' : 'rgb(107 114 128)',
+                }}
                 tickFormatter={xAxisLabelFormat}
               />
 
@@ -233,7 +291,10 @@ export function GraphComponent({
                   }
                   return value.toString();
                 }}
-                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                tick={{ 
+                  fontSize: 10, 
+                  fill: isDark ? 'rgb(156 163 175)' : 'rgb(107 114 128)',
+                }}
               />
 
               <Tooltip
@@ -249,15 +310,21 @@ export function GraphComponent({
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: '4px',
-                  borderColor: 'var(--border)',
+                  backgroundColor: isDark ? 'rgb(31 41 55)' : 'rgb(255 255 255)',
+                  border: `1px solid ${isDark ? 'rgb(75 85 99)' : 'rgb(229 231 235)'}`,
+                  color: isDark ? 'rgb(243 244 246)' : 'rgb(17 24 39)',
+                  boxShadow: isDark 
+                    ? '0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3)' 
+                    : '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 }}
+                cursor={{ fill: isDark ? 'rgba(75, 85, 99, 0.2)' : 'rgba(107, 114, 128, 0.1)' }}
               />
 
               <Bar
                 dataKey="total"
                 barSize={20}
                 radius={[4, 4, 0, 0]}
-                className="fill-indigo-400/60"
+                fill={isDark ? 'rgb(129 140 248 / 0.7)' : 'rgb(129 140 248 / 0.6)'}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -265,10 +332,10 @@ export function GraphComponent({
       </CardContent>
 
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
+        <div className="flex gap-2 font-medium leading-none text-gray-900 dark:text-gray-100">
           Trending this period <TrendingUp className="h-4 w-4" />
         </div>
-        <div className="leading-none text-muted-foreground">
+        <div className="leading-none text-gray-500 dark:text-gray-400">
           Showing total payment amounts
         </div>
       </CardFooter>

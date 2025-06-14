@@ -52,6 +52,48 @@ class User extends Authenticatable implements HasMedia
         'active'            => 'boolean',
     ];
 
+    /**
+     * Define media collections for file uploads
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('profile_images')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif']);
+
+        $this->addMediaCollection('registration_certificates')
+            ->singleFile()
+            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']);
+
+        $this->addMediaCollection('license_images')
+            ->singleFile()
+            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']);
+    }
+
+    /**
+     * Get the user's profile image URL
+     */
+    public function getProfileImageAttribute(): ?string
+    {
+        return $this->getFirstMediaUrl('profile_images');
+    }
+
+    /**
+     * Get the user's registration certificate URL
+     */
+    public function getRegistrationCertificateAttribute(): ?string
+    {
+        return $this->getFirstMediaUrl('registration_certificates');
+    }
+
+    /**
+     * Get the user's license image URL
+     */
+    public function getLicenseImageAttribute(): ?string
+    {
+        return $this->getFirstMediaUrl('license_images');
+    }
+
     public function packages(): HasMany
     {
         return $this->hasMany(Package::class, 'owner_id');

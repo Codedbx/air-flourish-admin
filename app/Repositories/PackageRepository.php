@@ -53,12 +53,77 @@ class PackageRepository implements PackageRepositoryInterface
             ->get();
     }
 
-    // public function filter(array $filters): LengthAwarePaginator
-    // {
-    //     $query = Package::with(['media','activities.timeSlots', 'owner'])
-    //                     ->visible()
-    //                     ->inRandomOrder();
+    public function filter(array $filters): LengthAwarePaginator
+    {
+        $query = Package::with(['media','activities.timeSlots', 'owner'])
+                        ->visible()
+                        ->inRandomOrder();
 
+        if (!empty($filters['destination'])) {
+            $query->where('location', 'like', '%' . $filters['destination'] . '%');
+        }
+
+        if (!empty($filters['owner_id'])) {
+            $query->where('owner_id', $filters['owner_id']);
+        }
+
+        if (!empty($filters['search'])) {
+            $query->where('title', 'like', '%' . $filters['search'] . '%');
+        }
+
+        if (
+            array_key_exists('price_min', $filters) && $filters['price_min'] !== '' 
+         || array_key_exists('price_max', $filters) && $filters['price_max'] !== ''
+        ) {
+            $min = $filters['price_min'] !== '' ? $filters['price_min'] : 0;
+            $max = $filters['price_max'] !== '' ? $filters['price_max'] : PHP_INT_MAX;
+            $query->whereBetween('base_price', [$min, $max]);
+        }
+
+        if (!empty($filters['check_in_start'])) {
+            if (!empty($filters['check_in_end'])) {
+                // Range filter
+                $query->whereBetween('hotel_checkin', [
+                    $filters['check_in_start'], 
+                    $filters['check_in_end']
+                ]);
+            } else {
+                // Single date filter
+                $query->whereDate('hotel_checkin', $filters['check_in_start']);
+            }
+        }
+
+        if (!empty($filters['hotel_rating'])) {
+            $query->where('hotel_star_rating', $filters['hotel_rating']);
+        }
+
+
+        if (!empty($filters['activities']) && is_array($filters['activities'])) {
+            $query->whereHas('activities', function ($q) use ($filters) {
+                $q->whereIn('id', $filters['activities']);
+            });
+        }
+
+        if (!empty($filters['date_start']) && !empty($filters['date_end'])) {
+            $query->where('booking_start_date', '<=', $filters['date_end'])
+                  ->where('booking_end_date', '>=',   $filters['date_start']);
+        }
+
+        $sortBy  = $filters['sort']      ?? 'id';
+        $sortDir = $filters['direction'] ?? 'desc';
+        $query->orderBy($sortBy, $sortDir);
+
+        $perPage = $filters['per_page'] ?? 5;
+        return $query->paginate($perPage);
+    }
+
+    //  public function filter(array $filters): LengthAwarePaginator
+    // {
+    //     // 1) Build base query with all filters EXCEPT ordering/pagination
+    //     $query = Package::with(['media','activities.timeSlots', 'owner'])
+    //                     ->visible();
+
+    //     // destination, search, price…
     //     if (!empty($filters['destination'])) {
     //         $query->where('location', 'like', '%' . $filters['destination'] . '%');
     //     }
@@ -68,7 +133,7 @@ class PackageRepository implements PackageRepositoryInterface
     //     }
 
     //     if (
-    //         array_key_exists('price_min', $filters) && $filters['price_min'] !== '' 
+    //         array_key_exists('price_min', $filters) && $filters['price_min'] !== ''
     //      || array_key_exists('price_max', $filters) && $filters['price_max'] !== ''
     //     ) {
     //         $min = $filters['price_min'] !== '' ? $filters['price_min'] : 0;
@@ -76,135 +141,72 @@ class PackageRepository implements PackageRepositoryInterface
     //         $query->whereBetween('base_price', [$min, $max]);
     //     }
 
+    //     // check-in single or range
     //     if (!empty($filters['check_in_start'])) {
     //         if (!empty($filters['check_in_end'])) {
-    //             // Range filter
     //             $query->whereBetween('hotel_checkin', [
-    //                 $filters['check_in_start'], 
-    //                 $filters['check_in_end']
+    //                 $filters['check_in_start'],
+    //                 $filters['check_in_end'],
     //             ]);
     //         } else {
-    //             // Single date filter
     //             $query->whereDate('hotel_checkin', $filters['check_in_start']);
     //         }
     //     }
 
+    //     // hotel star rating
     //     if (!empty($filters['hotel_rating'])) {
     //         $query->where('hotel_star_rating', $filters['hotel_rating']);
     //     }
 
-
+    //     // activities
     //     if (!empty($filters['activities']) && is_array($filters['activities'])) {
     //         $query->whereHas('activities', function ($q) use ($filters) {
     //             $q->whereIn('id', $filters['activities']);
     //         });
     //     }
 
+    //     // booking date window
     //     if (!empty($filters['date_start']) && !empty($filters['date_end'])) {
     //         $query->where('booking_start_date', '<=', $filters['date_end'])
-    //               ->where('booking_end_date', '>=',   $filters['date_start']);
+    //               ->where('booking_end_date', '>=', $filters['date_start']);
     //     }
 
-    //     $sortBy  = $filters['sort']      ?? 'id';
-    //     $sortDir = $filters['direction'] ?? 'desc';
-    //     $query->orderBy($sortBy, $sortDir);
+    //     // 2) Count total for pagination UI
+    //     $total = $query->count();
 
-    //     $perPage = $filters['per_page'] ?? 5;
-    //     return $query->paginate($perPage);
+    //     // 3) Calculate per-page & featured count
+    //     $perPage       = $filters['per_page'] ?? 10;
+    //     $page          = $filters['page']     ?? 1;
+    //     $featuredCount = round($perPage * 0.3);
+
+    //     // 4) Get featured & non-featured sets
+    //     $featured = (clone $query)
+    //         ->where('is_featured', true)
+    //         ->limit($featuredCount)
+    //         ->get();
+
+    //     $remaining = $perPage - $featured->count();
+
+    //     $nonFeatured = (clone $query)
+    //         ->where('is_featured', false)
+    //         ->limit($remaining)
+    //         ->get();
+
+    //     // 5) Merge & shuffle for final page
+    //     $items = $featured->merge($nonFeatured)->shuffle();
+
+    //     // 6) Build a LengthAwarePaginator
+    //     return new LengthAwarePaginator(
+    //         $items,
+    //         $total,
+    //         $perPage,
+    //         $page,
+    //         [
+    //             'path'  => LengthAwarePaginator::resolveCurrentPath(),
+    //             'query' => request()->query(), // preserve other query params
+    //         ]
+    //     );
     // }
-
-     public function filter(array $filters): LengthAwarePaginator
-    {
-        // 1) Build base query with all filters EXCEPT ordering/pagination
-        $query = Package::with(['media','activities.timeSlots', 'owner'])
-                        ->visible();
-
-        // destination, search, price…
-        if (!empty($filters['destination'])) {
-            $query->where('location', 'like', '%' . $filters['destination'] . '%');
-        }
-
-        if (!empty($filters['search'])) {
-            $query->where('title', 'like', '%' . $filters['search'] . '%');
-        }
-
-        if (
-            array_key_exists('price_min', $filters) && $filters['price_min'] !== ''
-         || array_key_exists('price_max', $filters) && $filters['price_max'] !== ''
-        ) {
-            $min = $filters['price_min'] !== '' ? $filters['price_min'] : 0;
-            $max = $filters['price_max'] !== '' ? $filters['price_max'] : PHP_INT_MAX;
-            $query->whereBetween('base_price', [$min, $max]);
-        }
-
-        // check-in single or range
-        if (!empty($filters['check_in_start'])) {
-            if (!empty($filters['check_in_end'])) {
-                $query->whereBetween('hotel_checkin', [
-                    $filters['check_in_start'],
-                    $filters['check_in_end'],
-                ]);
-            } else {
-                $query->whereDate('hotel_checkin', $filters['check_in_start']);
-            }
-        }
-
-        // hotel star rating
-        if (!empty($filters['hotel_rating'])) {
-            $query->where('hotel_star_rating', $filters['hotel_rating']);
-        }
-
-        // activities
-        if (!empty($filters['activities']) && is_array($filters['activities'])) {
-            $query->whereHas('activities', function ($q) use ($filters) {
-                $q->whereIn('id', $filters['activities']);
-            });
-        }
-
-        // booking date window
-        if (!empty($filters['date_start']) && !empty($filters['date_end'])) {
-            $query->where('booking_start_date', '<=', $filters['date_end'])
-                  ->where('booking_end_date', '>=', $filters['date_start']);
-        }
-
-        // 2) Count total for pagination UI
-        $total = $query->count();
-
-        // 3) Calculate per-page & featured count
-        $perPage       = $filters['per_page'] ?? 5;
-        $page          = $filters['page']     ?? 1;
-        $featuredCount = round($perPage * 0.3);
-
-        // 4) Get featured & non-featured sets
-        $featured = (clone $query)
-            ->where('is_featured', true)
-            ->inRandomOrder()
-            ->limit($featuredCount)
-            ->get();
-
-        $remaining = $perPage - $featured->count();
-
-        $nonFeatured = (clone $query)
-            ->where('is_featured', false)
-            ->inRandomOrder()
-            ->limit($remaining)
-            ->get();
-
-        // 5) Merge & shuffle for final page
-        $items = $featured->merge($nonFeatured)->shuffle();
-
-        // 6) Build a LengthAwarePaginator
-        return new LengthAwarePaginator(
-            $items,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path'  => LengthAwarePaginator::resolveCurrentPath(),
-                'query' => request()->query(), // preserve other query params
-            ]
-        );
-    }
 
     public function getRandomFeatured(int $limit = 10): Collection
     {

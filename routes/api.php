@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\PackageController;
 use App\Http\Controllers\Api\PaymentController;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ Route::get('espees/success', [PaymentController::class, 'espeesSuccess'])->name(
 Route::get('espees/failed', [PaymentController::class, 'espeesFailed'])->name('payment.espees.failed');
 
 
-
+Route::get('/locations/search', [LocationController::class, 'search']);
 
 
 

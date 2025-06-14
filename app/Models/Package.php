@@ -82,6 +82,11 @@ class Package extends Model implements HasMedia
         return $this->hasMany(Booking::class);
     }
 
+    public function coupons(): BelongsToMany
+    {
+        return $this->belongsToMany(Coupon::class);
+    }
+
     // Media Handling
     public function registerMediaCollections(): void
     {

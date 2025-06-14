@@ -6,16 +6,20 @@ use Inertia\Inertia;
  use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\PlatformSettingController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Models\Package;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+    // return Inertia::render('welcome');
+    return redirect('/login');
 
+})->name('home');
+//, 'permission:access dashboard'
 Route::middleware(['auth', 'verified'])->group(function () {
 
      Route::get('/settings/platform', [PlatformSettingController::class, 'edit'])
@@ -44,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/packages/edit/{package}', [PackageController::class, 'edit'])->name('packages.edit');
     Route::put('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
     Route::delete('/packages/{package}', [PackageController::class, 'destroy'])->name('packages.destroy');
+    Route::delete('/packages/{package}/media/{media}', [PackageController::class, 'deletePackageImage'])->name('packages.media.destroy');
 
 
     Route::get('/roles/all', [RoleController::class, 'index'])->name('roles.index');
@@ -68,7 +73,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     Route::get('bookings/all', [BookingController::class, 'index'])->name('bookings.index');
-    Route::get('bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
+    Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+
+
+
+    Route::get('/coupons/all',         [CouponController::class, 'index'])->name('coupons.index');
+    Route::get('/coupons/create',  [CouponController::class, 'create'])->name('coupons.create');
+    Route::post('/coupons',        [CouponController::class, 'store'])->name('coupons.store');
+    Route::patch('/coupons/{coupon}/toggle-active', [CouponController::class, 'toggleActive'])
+         ->name('coupons.toggleActive');
 
 
 

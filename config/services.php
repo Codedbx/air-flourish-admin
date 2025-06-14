@@ -60,6 +60,10 @@ return [
         'sms_from' => env('NEXMO_SMS_FROM'),
     ],
 
+    'locationiq' => [
+        'key' => env('LOCATIONIQ_KEY'),
+    ],
+
 
 
 ];

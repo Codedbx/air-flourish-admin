@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\UserService;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
@@ -12,12 +13,12 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    use AuthorizesRequests;
+    
     private UserService $userService;
 
     public function __construct(UserService $userService)
     {
-        // Restrict to authenticated admins, for example
-        // $this->middleware(['auth', 'role:admin']);
 
         $this->userService = $userService;
     }
@@ -27,6 +28,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', User::class);
        
         $filters = $request->only([
             'search',    
@@ -60,6 +62,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', User::class);
+
         $roles = Role::where('name', '!=', 'super-admin')->get();
 
         return Inertia::render('users/createUser', [
@@ -72,6 +76,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', User::class);
+
         $validated = $request->validate([
             'first_name'                 => 'required|string|max:255',
             'last_name'                  => 'required|string|max:255',
@@ -110,6 +116,8 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        $this->authorize('view', $user);
+
         $user = $this->userService->find($user->id);
 
         $userRoles = $user->roles->pluck('name')->toArray();
@@ -128,7 +136,7 @@ class UserController extends Controller
                 'zip_code'                     => $user->zip_code,
                 'cac_reg_no'                   => $user->cac_reg_no,
                 'active'                       => $user->active,
-                'roles'                   => $userRoles,
+                'roles'                        => $userRoles,
                 'profile_image_url'            => $user->getFirstMediaUrl('profile_image'),
                 'registration_certificate_url' => $user->getFirstMediaUrl('registration_certificate'),
                 'license_image_url'            => $user->getFirstMediaUrl('license_image'),
@@ -142,6 +150,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $this->authorize('view', $user);
+
         $user = $this->userService->find($user->id);
         $roles = $this->userService->getAllRoles();
         $userRoles = $user->roles->pluck('name')->toArray();
@@ -177,6 +187,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->authorize('update', $user);
         $validated = $request->validate([
             'first_name'                 => 'required|string|max:255',
             'last_name'                  => 'required|string|max:255',
@@ -221,6 +232,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->authorize('delete', $user);
         $this->userService->delete($user);
 
         return redirect()
@@ -233,6 +245,7 @@ class UserController extends Controller
      */
     public function toggleActive(User $user)
     {
+        $this->authorize('update', $user);
         $newStatus = ! $user->active;
         $this->userService->toggleActive($user, $newStatus);
 
@@ -241,14 +254,11 @@ class UserController extends Controller
             ->with('success', 'User status updated.');
     }
 
-    /**
-     * Handle AJAX request to remove a specific media collection.
-     *
-     * Expects URL: POST /users/{user}/remove-media/{type}
-     * where {type} is one of: profile, certificate, license
-     */
+   
     public function removeMedia(Request $request, User $user, $type)
     {
+        $this->authorize('delete', $user);
+
         $collection = match ($type) {
             'profile'      => 'profile_image',
             'certificate'  => 'registration_certificate',

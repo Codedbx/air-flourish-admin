@@ -1,5 +1,3 @@
-// resources/js/Pages/roles/Create.jsx
-
 import AppLayout from "@/layouts/app-layout";
 import type { BreadcrumbItem } from "@/types";
 import { Head, useForm, usePage, Link } from "@inertiajs/react";
@@ -134,20 +132,19 @@ export default function CreateRole() {
                 {/* Guard */}
                 <div className="space-y-2">
                   <Label htmlFor="guard_name">Guard</Label>
-                  <select
+                 <select
                     id="guard_name"
                     value={data.guard_name}
                     onChange={(e) =>
                       setData("guard_name", e.target.value as "web" | "api")
                     }
                     className={cn(
-                      "block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary",
-                      errors.guard_name &&
-                        "border-destructive focus:ring-destructive"
+                      "block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:outline-none focus:ring-1 focus:ring-primary",
+                      "dark:bg-black dark:border-gray-600 dark:text-gray-100 dark:focus:ring-primary",
+                      errors.guard_name && "border-destructive dark:border-destructive focus:ring-destructive"
                     )}
                   >
                     <option value="web">Web</option>
-                    <option value="api">API</option>
                   </select>
                   {errors.guard_name && (
                     <p className="text-sm text-destructive">
@@ -158,8 +155,6 @@ export default function CreateRole() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Permissions Card (flat list) */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

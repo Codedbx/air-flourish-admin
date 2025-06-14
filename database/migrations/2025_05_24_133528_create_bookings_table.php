@@ -39,6 +39,9 @@ return new class extends Migration
             $table->decimal('computed_admin_addon', 10, 2);
             $table->decimal('total_price_per_person', 10, 2);
             $table->decimal('total_price', 10, 2);
+
+            $table->foreignId('coupon_id')->nullable()->constrained('coupons');
+            $table->decimal('discount_amount', 10, 2)->default(0);
             
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
 

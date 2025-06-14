@@ -28,6 +28,8 @@ class Booking extends Model
         'computed_admin_addon',
         'total_price_per_person',
         'total_price',
+        'coupon_id',
+        'discount_amount',
         'status',
         'access_token',
         'access_token_expires_at',
@@ -42,6 +44,7 @@ class Booking extends Model
         'computed_admin_addon'     => 'decimal:2',
         'total_price_per_person'   => 'decimal:2',
         'total_price'              => 'decimal:2',
+        'discount_amount'          => 'decimal:2',
         'status'                   => 'string',
         'access_token_expires_at'  => 'datetime',
         'snapshot'                 => 'array',
@@ -73,5 +76,10 @@ class Booking extends Model
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

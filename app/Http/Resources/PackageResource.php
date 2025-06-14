@@ -51,6 +51,14 @@ class PackageResource extends JsonResource
             'cancellation_policy' => $this->cancellation_policy,
             'location' => $this->location,
             'visibility' => $this->visibility,
+            'flight_from'           => $this->flight_from,
+            'flight_to'             => $this->flight_to,
+            'airline_name'          => $this->airline_name,
+            'booking_class'         => $this->booking_class,
+            'hotel_name'            => $this->hotel_name,
+            'hotel_star_rating'     => $this->hotel_star_rating,
+            'hotel_checkin'         => $this->hotel_checkin,
+            'hotel_checkout'        => $this->hotel_checkout,
             'package_state'  => $state,
             'owner' => $this->whenLoaded('owner', function () {
                 return [
@@ -77,11 +85,6 @@ class PackageResource extends JsonResource
             }),
             'activities' => $this->whenLoaded('activities', function () {
                 return ActivityResource::collection($this->activities);
-
-               
-                // return ActivityResource::collection(
-                //     $this->activities->map(fn($pivotModel) => $pivotModel->activity)
-                // );
             }),
         ];
     }

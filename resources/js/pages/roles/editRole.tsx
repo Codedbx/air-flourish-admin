@@ -149,9 +149,9 @@ export default function EditRole() {
                       setData("guard_name", e.target.value as "web" | "api")
                     }
                     className={cn(
-                      "block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary",
-                      errors.guard_name &&
-                        "border-destructive focus:ring-destructive"
+                      "block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:outline-none focus:ring-1 focus:ring-primary",
+                      "dark:bg-black dark:border-gray-900 dark:text-gray-100 dark:focus:ring-primary",
+                      errors.guard_name && "border-destructive dark:border-destructive focus:ring-destructive"
                     )}
                   >
                     <option value="web">Web</option>

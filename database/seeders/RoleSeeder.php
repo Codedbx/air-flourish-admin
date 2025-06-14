@@ -6,40 +6,62 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        //
-        // 1) Create roles
-        //
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        if (DB::table('permissions')->count()) {
+            Schema::disableForeignKeyConstraints();
+            DB::table('role_has_permissions')->truncate();
+            DB::table('model_has_roles')->truncate();
+            DB::table('model_has_permissions')->truncate();
+            Permission::truncate();
+            Role::truncate();
+            Schema::enableForeignKeyConstraints();
+        }
+        
         $adminRole = Role::create(['name' => 'admin']);
         $agentRole = Role::create(['name' => 'agent']);
         $userRole  = Role::create(['name' => 'user']);
 
         
-        $permissionsMap = [
+         $permissionsMap = [
 
+            // Must have dashboard access first
+            'dashboard'         => ['access'],
+
+            // Platform Settings
             'platform settings' => ['view', 'edit'],
 
-            // Packages, Activities, TimeSlots, Bookings: full CRUD in “all” vs “own”
-            'packages'    => ['view all', 'view own', 'create', 'edit all', 'edit own', 'delete all', 'delete own'],
-            'activities'  => ['view all', 'view own', 'create', 'edit all', 'edit own', 'delete all', 'delete own'],
-            'timeslots'   => ['view all', 'view own', 'create', 'edit all', 'edit own', 'delete all', 'delete own'],
-            'bookings'    => ['view all', 'view own', 'create', 'edit all', 'edit own', 'delete all', 'delete own'],
+            // Packages, Activities, TimeSlots, Bookings
+            'packages'    => ['view all','view own','create','edit all','edit own','delete all','delete own'],
+            'activities'  => ['view all','view own','create','edit all','edit own','delete all','delete own'],
+            'timeslots'   => ['view all','view own','create','edit all','edit own','delete all','delete own'],
+            'bookings'    => ['view all','view own','create','edit all','edit own','delete all','delete own'],
+            'coupons'     => ['view all','view own','create','edit all','edit own','delete all','delete own'],
 
-            // Payments: “view” + “process” (both “all” and “own”)
-            'payments'    => ['view all', 'view own', 'process all', 'process own'],
+            'roles'     => ['view','create','edit','delete'],
 
-            // Analytics: only “view analytics”
-            'analytics'   => ['view'],
 
-            // Users: (admin only)
-            'users'       => ['view all', 'create', 'edit all', 'delete all'],
+            // Payments
+            'payments'    => ['view all','view own','process all','process own'],
+
+            // Analytics
+            'analytics'   => ['view all','view own'],
+
+            // Users (admin only)
+            'users'       => ['view all','create','edit all','delete all'],
         ];
+
 
       
         foreach ($permissionsMap as $resource => $actions) {
@@ -55,115 +77,28 @@ class RoleSeeder extends Seeder
         $adminRole->givePermissionTo(Permission::all());
 
 
-        $agentPermissions = [];
+        $agentPermissions = [
+            // dashboard
+            'access dashboard',
 
-        // Packages (own + create)
-        $agentPermissions[] = 'view own packages';
-        $agentPermissions[] = 'create packages';
-        $agentPermissions[] = 'edit own packages';
-        $agentPermissions[] = 'delete own packages';
-
-        // Activities (own + create)
-        $agentPermissions[] = 'view own activities';
-        $agentPermissions[] = 'create activities';
-        $agentPermissions[] = 'edit own activities';
-        $agentPermissions[] = 'delete own activities';
-
-        // TimeSlots (own + create)
-        $agentPermissions[] = 'view own timeslots';
-        $agentPermissions[] = 'create timeslots';
-        $agentPermissions[] = 'edit own timeslots';
-        $agentPermissions[] = 'delete own timeslots';
-
-        // Bookings (own + create)
-        $agentPermissions[] = 'view own bookings';
-        $agentPermissions[] = 'create bookings';
-        $agentPermissions[] = 'edit own bookings';
-        $agentPermissions[] = 'delete own bookings';
-
-        // Payments (own only: view + process)
-        $agentPermissions[] = 'view own payments';
-        $agentPermissions[] = 'process own payments';
+            // packages
+            'view own packages','create packages','edit own packages','delete own packages',
+            // activities
+            'view own activities','create activities','edit own activities','delete own activities',
+            // timeslots
+            'view own timeslots','create timeslots','edit own timeslots','delete own timeslots',
+            // bookings
+            'view own bookings','create bookings','edit own bookings','delete own bookings',
+            //coupons 
+            'view own coupons','create coupons','edit own coupons','delete own coupons',
+            // payments
+            'view own payments','process own payments',
+            // analytics
+            'view own analytics',
+        ];
 
         // (No platform settings, no analytics, no user management)
         $agentRole->givePermissionTo($agentPermissions);
 
     }
 }
-
-// namespace Database\Seeders;
-
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-// use Illuminate\Database\Seeder;
-// use Spatie\Permission\Models\Permission;
-// use Spatie\Permission\Models\Role;
-
-// class RoleSeeder extends Seeder
-// {
-//     /**
-//      * Run the database seeds.
-//      */
-//     public function run(): void
-//     {
-//         // Create roles
-//         $adminRole = Role::create(['name' => 'admin']);
-//         $agentRole = Role::create(['name' => 'agent']);
-//         $userRole = Role::create(['name' => 'user']);
-
-//         // Create permissions
-//         $permissions = [
-//             // Platform settings
-//             'view platform settings',
-//             'edit platform settings',
-            
-//             // Packages
-//             'view packages',
-//             'create packages',
-//             'edit packages',
-//             'delete packages',
-            
-//             // Activities
-//             'view activities',
-//             'create activities',
-//             'edit activities',
-//             'delete activities',
-            
-//             // Bookings
-//             'view bookings',
-//             'create bookings',
-//             'edit bookings',
-//             'delete bookings',
-            
-//             // Payments
-//             'view payments',
-//             'process payments',
-//         ];
-
-//         foreach ($permissions as $permission) {
-//             Permission::create(['name' => $permission]);
-//         }
-
-//         // Assign permissions to roles
-//         $adminRole->givePermissionTo(Permission::all());
-        
-//         $agentRole->givePermissionTo([
-//             'view packages',
-//             'create packages',
-//             'edit packages',
-//             'delete packages',
-//             'view activities',
-//             'create activities',
-//             'edit activities',
-//             'delete activities',
-//             'view bookings',
-//         ]);
-        
-//         // $userRole->givePermissionTo([
-//         //     'view packages',
-//         //     'view activities',
-//         //     'view bookings',
-//         //     'create bookings',
-//         // ]);
-//     }
-// }
-
