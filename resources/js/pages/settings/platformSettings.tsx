@@ -243,7 +243,7 @@ export default function PlatformSettings() {
                   <Label htmlFor="admin_addon_amount">
                     Admin Addon Amount
                     <span className="text-xs text-muted-foreground ml-1">
-                      ({data.admin_addon_type === 'percentage' ? '%' : '₦'})
+                      ({data.admin_addon_type === 'percentage' ? '%' : '$'})
                     </span>
                   </Label>
                   <div className="relative">
@@ -264,7 +264,7 @@ export default function PlatformSettings() {
                       )}
                     />
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                      {data.admin_addon_type === 'percentage' ? '%' : '₦'}
+                      {data.admin_addon_type === 'percentage' ? '%' : '$'}
                     </div>
                   </div>
                   {errors.admin_addon_amount && (

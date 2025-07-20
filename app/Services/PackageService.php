@@ -109,12 +109,19 @@ class PackageService
         return $this->packageRepository->filter($filters);
     }
 
+    //for the API, we can use the same method as above
+    public function getFilteredVisiblePackages(array $filters)
+    {
+        return $this->packageRepository->PackageFilter($filters);
+    }
+
+
     public function getUserPackages($id)
     {
         return $this->packageRepository->getByOwner($id);
     }
           
-     public function getRandomFeaturedPackages(int $limit = 10): Collection
+     public function getFeaturedPackages(int $limit = 10): Collection
     {
         return $this->packageRepository->getRandomFeatured($limit);
     }
@@ -137,11 +144,19 @@ class PackageService
 
         $base = isset($data['base_price']) ? (float)$data['base_price'] : 0.0;
 
-        $adminAddonPrice = 0.0;
-        $adminPriceType  = 'fixed';
+         $adminSetting = PlatformSetting::first();
 
-        if ($adminPriceType === 'percentage') {
-            $adminAddonPrice = ($base + $activityTotal) * ($adminAddonPrice / 100);
+        if ($adminSetting) {
+            $adminPriceType  = $adminSetting->admin_addon_type;
+            $withBase = ($base + $activityTotal);
+
+            $adminAddonPrice = $adminSetting->admin_addon_type === 'fixed'
+                ? $adminSetting->admin_addon_amount
+                : ($withBase * $adminSetting->admin_addon_amount / 100);
+        } else {
+            // no settings row ⇒ no extra admin add‐on
+            $adminPriceType  = $adminSetting->admin_addon_type;
+            $adminAddonPrice = 0;
         }
 
         // 4) Agent addon

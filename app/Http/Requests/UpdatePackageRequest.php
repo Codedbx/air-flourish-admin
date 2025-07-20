@@ -42,8 +42,9 @@ class UpdatePackageRequest extends FormRequest
             'hotel_checkout'        => ['nullable', 'date', 'after_or_equal:hotel_checkin'],
             'activities'            => ['sometimes', 'required', 'array'],
             'activities.*'          => ['integer', 'exists:activities,id'],
-            'images'                => ['sometimes', 'required', 'array'],
+            'images'                => ['nullable', 'array'],
             'images.*'              => ['image', 'mimes:jpeg,png,webp', 'max:1024'],
+
 
             'deleted_image_ids'     => ['sometimes','array'],
             'deleted_image_ids.*'   => ['integer','exists:media,id'],

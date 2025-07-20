@@ -13,6 +13,7 @@ class Payment extends Model
         'gateway',
         'transaction_reference',
         'status',
+        'currency',
         'meta',
     ];
 

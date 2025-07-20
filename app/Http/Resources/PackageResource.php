@@ -39,7 +39,7 @@ class PackageResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'base_price' => (float) $this->base_price, 
+            'total_price' => (float) $this->total_price, 
             'check_in_time' => $this->check_in_time,
             'check_out_time' => $this->check_out_time,
             'booking_start_date' => $this->booking_start_date,

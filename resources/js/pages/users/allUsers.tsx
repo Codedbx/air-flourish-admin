@@ -1043,7 +1043,7 @@ export default function AllUsers() {
                   value={sortBy}
                   onValueChange={(val: string) => setSortBy(val as any)}
                 >
-                  <SelectTrigger className="w-full sm:w-48 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                  <SelectTrigger className="w-full bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Sort by..." />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
@@ -1068,7 +1068,7 @@ export default function AllUsers() {
                   value={perPage}
                   onValueChange={(val: string) => setPerPage(val)}
                 >
-                  <SelectTrigger className="w-full sm:w-24 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                  <SelectTrigger className="w-full bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Per page" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
@@ -1156,9 +1156,6 @@ export default function AllUsers() {
                   </Button>
                   <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                     Deactivate Selected
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    Export Selected
                   </Button>
                 </div>
               </div>

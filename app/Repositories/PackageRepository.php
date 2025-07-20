@@ -55,9 +55,7 @@ class PackageRepository implements PackageRepositoryInterface
 
     public function filter(array $filters): LengthAwarePaginator
     {
-        $query = Package::with(['media','activities.timeSlots', 'owner'])
-                        ->visible()
-                        ->inRandomOrder();
+        $query = Package::with(['media','activities.timeSlots', 'owner']);
 
         if (!empty($filters['destination'])) {
             $query->where('location', 'like', '%' . $filters['destination'] . '%');
@@ -117,7 +115,70 @@ class PackageRepository implements PackageRepositoryInterface
         return $query->paginate($perPage);
     }
 
-    //  public function filter(array $filters): LengthAwarePaginator
+    public function PackageFilter(array $filters): LengthAwarePaginator
+    {
+        $query = Package::with(['media','activities.timeSlots', 'owner'])
+                        ->visible();
+
+        if (!empty($filters['destination'])) {
+            $query->where('location', 'like', '%' . $filters['destination'] . '%');
+        }
+
+        if (!empty($filters['owner_id'])) {
+            $query->where('owner_id', $filters['owner_id']);
+        }
+
+        if (!empty($filters['search'])) {
+            $query->where('title', 'like', '%' . $filters['search'] . '%');
+        }
+
+        if (
+            array_key_exists('price_min', $filters) && $filters['price_min'] !== '' 
+         || array_key_exists('price_max', $filters) && $filters['price_max'] !== ''
+        ) {
+            $min = $filters['price_min'] !== '' ? $filters['price_min'] : 0;
+            $max = $filters['price_max'] !== '' ? $filters['price_max'] : PHP_INT_MAX;
+            $query->whereBetween('base_price', [$min, $max]);
+        }
+
+        if (!empty($filters['check_in_start'])) {
+            if (!empty($filters['check_in_end'])) {
+                // Range filter
+                $query->whereBetween('hotel_checkin', [
+                    $filters['check_in_start'], 
+                    $filters['check_in_end']
+                ]);
+            } else {
+                // Single date filter
+                $query->whereDate('hotel_checkin', $filters['check_in_start']);
+            }
+        }
+
+        if (!empty($filters['hotel_rating'])) {
+            $query->where('hotel_star_rating', $filters['hotel_rating']);
+        }
+
+
+        if (!empty($filters['activities']) && is_array($filters['activities'])) {
+            $query->whereHas('activities', function ($q) use ($filters) {
+                $q->whereIn('id', $filters['activities']);
+            });
+        }
+
+        if (!empty($filters['date_start']) && !empty($filters['date_end'])) {
+            $query->where('booking_start_date', '<=', $filters['date_end'])
+                  ->where('booking_end_date', '>=',   $filters['date_start']);
+        }
+
+        $sortBy  = $filters['sort']      ?? 'id';
+        $sortDir = $filters['direction'] ?? 'desc';
+        $query->orderBy($sortBy, $sortDir);
+
+        $perPage = $filters['per_page'] ?? 5;
+        return $query->paginate($perPage);
+    }
+
+    //  public function PackageFilter(array $filters): LengthAwarePaginator
     // {
     //     // 1) Build base query with all filters EXCEPT ordering/pagination
     //     $query = Package::with(['media','activities.timeSlots', 'owner'])

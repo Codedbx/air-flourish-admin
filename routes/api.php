@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\PackageController;
 use App\Http\Controllers\Api\PaymentController;
@@ -12,14 +13,11 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-// Platform Settings
-
-
 // Packages
 Route::prefix('packages')->group(function () {
     Route::get('/', [PackageController::class, 'index']);
     Route::get('/{id}', [PackageController::class, 'show']);
-    Route::get('/featured', [PackageController::class, 'randomFeatured']);
+    Route::get('/featured', [PackageController::class, 'getFeaturedPackages']);
 });
 
 Route::get('agent/packages', [PackageController::class, 'userPackages']);
@@ -41,7 +39,8 @@ Route::get('espees/failed', [PaymentController::class, 'espeesFailed'])->name('p
 
 Route::get('/locations/search', [LocationController::class, 'search']);
 
-
+Route::post('/coupons/validate', [CouponController::class, 'validateCoupon'])
+         ->name('coupons.validate');
 
 
 // For testing purposes - authenticated user info

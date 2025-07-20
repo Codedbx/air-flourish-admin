@@ -101,6 +101,7 @@ class PaymentService
             'gateway' => $data['gateway'],
             'transaction_reference' => $reference,
             'status' => 'pending',
+            'currency' => "USD",
             'meta' => [
                 'return_url' => $data['return_url'],
                 'cancel_url' => $data['cancel_url'],
@@ -112,15 +113,13 @@ class PaymentService
 
         try {
             $result = $gateway->initialize([
-                'email' => $booking->email,
+                'email' => $booking->guest_email,
                 'amount' => $gatewayAmount,
                 'currency' => $currency,
                 'reference' => $reference,
                 'metadata' => [
                     'booking_reference' => $booking->reference,
                     'customer_name' => $booking->customer_name,
-                    'original_amount' => $booking->total_price,
-                    'converted_amount' => $convertedAmount,
                 ],
                 'return_url' => $data['return_url'],
                 'cancel_url' => $data['cancel_url'],

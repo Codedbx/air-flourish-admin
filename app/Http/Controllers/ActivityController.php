@@ -147,7 +147,7 @@ class ActivityController extends Controller
 
         $activity = $this->activityService->updateActivity($activity->id, $validated);
 
-        return redirect()->route('activities.show', $activity->id)
+        return redirect()->route('activities.index', $activity->id)
             ->with('success', 'Activity updated successfully!');
     }
 

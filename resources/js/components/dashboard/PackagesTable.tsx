@@ -1295,10 +1295,6 @@ const PackagesTable = () => {
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
-            <Button variant="outline" className="w-full sm:w-auto">
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
             <Button onClick={() => router.visit(route("packages.create"))} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Create Package
@@ -1551,7 +1547,7 @@ const PackagesTable = () => {
                   Location
                 </th>
                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Price
+                  Total Price
                 </th>
                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Activities
@@ -1613,7 +1609,7 @@ const PackagesTable = () => {
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 text-green-500 mr-0 sm:mr-1" />
                       <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
-                        {formatPrice(pkg.base_price)}
+                        {formatPrice(pkg.total_price)}
                       </span>
                     </div>
                   </td>

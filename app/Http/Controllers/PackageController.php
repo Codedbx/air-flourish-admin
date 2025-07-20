@@ -158,6 +158,13 @@ class PackageController extends Controller
         $total = $remaining + $newCount;
 
 
+        if ($total < 4 || $total > 5) {
+            return back()->withErrors([
+                'images' => 'A package must have between 4 and 5 images in total (after deletions and uploads).',
+            ])->withInput();
+        }
+
+
         Log::info('total images', ['image count' => $total,
         'existing images count' => $existingCount,
         'toDelete count' => $toDelete,
@@ -165,13 +172,6 @@ class PackageController extends Controller
         'new images count' => $newCount,
     ]);
 
-        
-
-        // if ($total < 4 || $total > 5) {
-        //     return back()
-        //         ->withErrors(['images' => 'You must have between 4 and 5 total images.'])
-        //         ->withInput();
-        // }
 
         foreach ($toDelete as $mediaId) {
             if ($media = $updated->media()->find($mediaId)) {

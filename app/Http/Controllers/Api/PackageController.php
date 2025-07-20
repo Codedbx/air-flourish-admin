@@ -43,7 +43,7 @@ class PackageController extends Controller
 
         Log::info('Package filters:', $filters);
 
-        $packages = $this->packageService->getFilteredPackages($filters);
+        $packages = $this->packageService->getFilteredVisiblePackages($filters);
 
         // Check if no packages were found after filtering
         if ($packages->isEmpty() && $packages->total() === 0) { // Check total for true emptiness, as isEmpty() can be true even with a total if it's the last page
@@ -58,10 +58,10 @@ class PackageController extends Controller
         
     }
 
-     public function randomFeatured(Request $request): JsonResponse
+     public function getFeaturedPackages(Request $request): JsonResponse
     {
         $limit = (int) $request->query('limit', 10);
-        $packages = $this->packageService->getRandomFeaturedPackages($limit);
+        $packages = $this->packageService->getFeaturedPackages($limit);
 
         return response()->json([
             'status' => 'success',

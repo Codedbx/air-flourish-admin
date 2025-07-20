@@ -22,6 +22,7 @@ class PaymentController extends Controller
     {
         $booking = Booking::where('booking_reference', $request->reference)->firstOrFail();
 
+        Log::info("request", [$request->all()]);
         if ($booking->status !== 'pending') {
             return response()->json([
                 'status' => 'error',

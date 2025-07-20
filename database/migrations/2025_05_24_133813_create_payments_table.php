@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('gateway');
             $table->string('transaction_reference')->unique();
             $table->json('meta')->nullable();
-            $table->enum('status', ['pending', 'paid', 'failed'])->default('pending');
+            $table->string('status', 50)->default('pending');
+            $table->string('currency', 20)->default('USD');
             $table->timestamps();
         });
     }
