@@ -82,4 +82,18 @@ class Booking extends Model
     {
         return $this->belongsTo(Coupon::class);
     }
+
+
+    public function markAsConfirmed(): void
+    {
+        $this->update([
+            'status' => 'confirmed',
+            'confirmed_at' => now(),
+        ]);
+    }
+
+    public function hasInvoice(): bool
+    {
+        return $this->invoice !== null;
+    }
 }

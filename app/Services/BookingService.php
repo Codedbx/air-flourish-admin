@@ -175,8 +175,9 @@ public function createBooking(array $data): Booking
         $discountAmount = 0;
         $couponId = null;
 
-        if (!empty($data['coupon_id'])) {
-            $coupon = Coupon::findOrFail($data['coupon_id']);
+        if (!empty($data['coupon'])) {
+            $coupon = Coupon::where('code', $data['coupon'])->first();
+
 
             if (! $coupon->isValidFor($package)) {
                 throw new Exception("Coupon is not valid for this package.");

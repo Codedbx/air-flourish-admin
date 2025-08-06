@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('invoice_number')->unique();
             $table->string('file_path');
             $table->datetime('issued_at');
+            $table->enum('status', ['generating', 'generated', 'sent', 'downloaded', 'failed'])->default('generated');
+            $table->integer('download_count')->default(0);
+            $table->timestamp('last_downloaded_at')->nullable();
             $table->timestamps();
         });
     }

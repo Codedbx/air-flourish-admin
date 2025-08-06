@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('meta')->nullable();
             $table->string('status', 50)->default('pending');
             $table->string('currency', 20)->default('USD');
+            $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
     }

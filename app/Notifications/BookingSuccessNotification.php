@@ -7,13 +7,11 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-// use Illuminate\Notifications\Messages\BroadcastMessage;
-// use Illuminate\Notifications\Messages\VonageMessage;
 use Illuminate\Support\Carbon;
 
 class BookingSuccessNotification extends Notification implements ShouldQueue
 {
-   use Queueable;
+    use Queueable;
 
     protected $booking;
     protected $recipientName;
@@ -26,26 +24,11 @@ class BookingSuccessNotification extends Notification implements ShouldQueue
         string $recipientEmail,
         ?string $recipientPhone = null
     ) {
-        $this->booking        = $booking;
-        $this->recipientName  = $recipientName;
+        $this->booking = $booking;
+        $this->recipientName = $recipientName;
         $this->recipientEmail = $recipientEmail;
         $this->recipientPhone = $recipientPhone;
     }
-
-    // public function via($notifiable): array
-    // {
-    //     $channels = ['mail'];
-
-    //     if ($this->recipientPhone) {
-    //         $channels[] = 'vonage';
-    //     }
-
-    //     if ($this->booking->user) {
-    //         $channels[] = 'broadcast';
-    //     }
-
-    //     return $channels;
-    // }
 
     public function via($notifiable): array
     {
@@ -54,43 +37,50 @@ class BookingSuccessNotification extends Notification implements ShouldQueue
 
     public function toMail($notifiable): MailMessage
     {
-        return (new MailMessage)
+        $invoice = $this->booking->invoice;
+        
+        $mailMessage = (new MailMessage)
             ->subject("Booking Confirmed! Ref: {$this->booking->booking_reference}")
-            ->markdown('emails.bookings.success', [
-                'booking'       => $this->booking,
+            ->view('emails.bookings.booking-receipt', [
+                'booking' => $this->booking,
+                'invoice' => $invoice,
                 'recipientName' => $this->recipientName,
+                'downloadUrl' => $invoice?->signed_download_url,
             ]);
+
+        // Attach PDF if invoice exists and file is ready
+        if ($invoice && $invoice->fileExists()) {
+            $filePath = storage_path('app/' . $invoice->file_path);
+            $fileName = 'Receipt_' . $this->booking->booking_reference . '.pdf';
+            
+            $mailMessage->attach($filePath, [
+                'as' => $fileName,
+                'mime' => 'application/pdf',
+            ]);
+        }
+
+        return $mailMessage;
     }
 
-    // public function toVonage($notifiable): VonageMessage
-    // {
-    //     $ref   = $this->booking->booking_reference;
-    //     $title = $this->booking->package->title;
-    //     $amt   = number_format($this->booking->total_price, 2);
+    /**
+     * Get the array representation of the notification.
+     */
+    public function toArray($notifiable): array
+    {
+        return [
+            'booking_id' => $this->booking->id,
+            'booking_reference' => $this->booking->booking_reference,
+            'recipient_name' => $this->recipientName,
+            'recipient_email' => $this->recipientEmail,
+            'sent_at' => Carbon::now()->toIso8601String(),
+        ];
+    }
 
-    //     return (new VonageMessage())
-    //         ->content("Hi {$this->recipientName}, your booking (Ref: {$ref}) for “{$title}” was successful. Total: \${$amt}.");
-    // }
-
-    // public function toBroadcast($notifiable): BroadcastMessage
-    // {
-    //     return new BroadcastMessage([
-    //         'booking_id'        => $this->booking->id,
-    //         'booking_reference' => $this->booking->booking_reference,
-    //         'package_title'     => $this->booking->package->title,
-    //         'total_price'       => $this->booking->total_price,
-    //         'timestamp'         => Carbon::now()->toIso8601String(),
-    //     ]);
-    // }
-
-    // public function toDatabase($notifiable): array
-    // {
-    //     return [
-    //         'booking_id'        => $this->booking->id,
-    //         'booking_reference' => $this->booking->booking_reference,
-    //         'package_title'     => $this->booking->package->title,
-    //         'total_price'       => $this->booking->total_price,
-    //         'sent_at'           => now(),
-    //     ];
-    // }
+    /**
+     * Prevent duplicate notifications
+     */
+    public function uniqueId(): string
+    {
+        return "booking_success_{$this->booking->id}";
+    }
 }
